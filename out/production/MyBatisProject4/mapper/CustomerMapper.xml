@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.CustomerMapper">
+    <!--添加客户-->
+    <insert id="insertCustomer" parameterType="domain.Customer"
+            useGeneratedKeys="true"
+            keyColumn="cust_id"
+            keyProperty="cust_id">
+        insert into `customer`(cust_name,cust_profession,cust_phone,email)
+        value (#{cust_name},#{cust_profession},#{cust_phone},#{email})
+    </insert>
+
+    <!--根据ID删除客户-->
+    <delete id="deleteCustomer">
+        delete from `customer` where cust_id=#{id}
+    </delete>
+
+    <!--根据id获取客户-->
+    <select id="getCustomerWithId" resultType="domain.Customer">
+        select * from `customer` where cust_id = #{id}
+    </select>
+
+    <!--查询所有客户-->
+    <!--左连接-->
+<!--    <select id="getAllCustomers" resultType="domain.Customer" resultMap="custMap">
+        SELECT * FROM `customer` as c LEFT JOIN `order` as o ON c.cust_id = o.cust_id ;
+    </select>
+    <resultMap id="custMap" type="domain.Customer">
+        <id column="cust_id" property="cust_id"/>
+        <result column="cust_name" property="cust_name"/>
+        <result column="cust_profession" property="cust_profession"/>
+        <result column="cust_phone" property="cust_phone"/>
+        <result column="email" property="email"/>
+        <collection property="orders" ofType="domain.Order">
+            <id column="order_id" property="order_id"/>
+            <id column="order_name" property="order_name"/>
+            <id column="order_num" property="order_num"/>
+        </collection>
+    </resultMap>-->
+
+    <!--查询所有客户-->
+    <!--分布查询-->
+    <select id="getAllCustomers" resultType="domain.Customer" resultMap="custMap">
+        SELECT * FROM `customer`;
+    </select>
+    <resultMap id="custMap" type="domain.Customer">
+        <id column="cust_id" property="cust_id"/>
+        <result column="cust_name" property="cust_name"/>
+        <result column="cust_profession" property="cust_profession"/>
+        <result column="cust_phone" property="cust_phone"/>
+        <result column="email" property="email"/>
+        <collection property="orders"
+                    javaType="list"
+                    ofType="domain.Order"
+                    select="mapper.OrderMapper.getOrderWithCustId"
+                    column="cust_id">
+        </collection>
+    </resultMap>
+</mapper>

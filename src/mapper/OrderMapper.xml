@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.OrderMapper">
+    <!--如果sql查询字段名和pojo的属性名不一致，可以通过resultMap将字段名和属性名作一个对应关系-->
+<!--    <resultMap id="orderMape" type="domain.Order">
+        <id property="order_id" column="order_id"/>
+        <result property="order_name" column="order_name"/>
+        <result property="order_num" column="order_num"/>
+
+        <result property="customer.cust_id" column="cust_id"/>
+        <result property="customer.cust_name" column="cust_name"/>
+        <result property="customer.cust_profession" column="cust_profession"/>
+        <result property="customer.cust_phone" column="cust_phone"/>
+        <result property="customer.email" column="email"/>
+    </resultMap>-->
+
+    <resultMap id="orderMape" type="domain.Order">
+        <id property="order_id" column="order_id"/>
+        <result property="order_name" column="order_name"/>
+        <result property="order_num" column="order_num"/>
+
+        <association property="customer" javaType="domain.Customer">
+            <id property="cust_id" column="cust_id"/>
+            <result property="cust_name" column="cust_name"/>
+            <result property="cust_profession" column="cust_profession"/>
+            <result property="cust_phone" column="cust_phone"/>
+            <result property="email" column="email"/>
+        </association>
+    </resultMap>
+
+    <!--添加订单-->
+    <insert id="insertOrder" parameterType="domain.Order"
+            useGeneratedKeys="true"
+            keyColumn="order_id"
+            keyProperty="order_id">
+
+        insert into `order`(order_name,order_num,cust_id)
+        values (#{order_name},#{order_num},#{customer.cust_id})
+    </insert>
+
+    <!--更新订单表与客户表的关系 cust_id-->
+    <update id="updateCustId">
+        update `order` set `cust_id` =#{custId} where `order_id`=#{orderId}
+    </update>
+
+    <!--删除操作-打破跟客户表之间的关系-->
+    <update id="updateRelationCustomer">
+        update `order` set cust_id=null where cust_id=#{custId}
+    </update>
+
+
+    <select id="getAllOrders" resultMap="orderMape">
+        SELECT * FROM `order` as o LEFT JOIN `customer` c on o.cust_id = c.cust_id;
+    </select>
+
+    <resultMap id="resultMap2" type="domain.Order">
+
+        <id property="order_id" column="order_id"/>
+        <result property="order_name" column="order_name"/>
+        <result property="order_num" column="order_num"/>
+
+        <association property="customer" javaType="domain.Customer"
+                     select="mapper.CustomerMapper.getCustomerWithId"
+                     column="cust_id"
+        >
+        </association>
+    </resultMap>
+    <select id="getOrderWithId" resultMap="resultMap2">
+        SELECT * FROM `order` WHERE order_id = #{id}
+    </select>
+    <select id="getOrderWithCustId" resultType="domain.Order">
+        SELECT * FROM `order` WHERE cust_id = #{id}
+    </select>
+</mapper>
