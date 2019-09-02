@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.TeacherMapper">
+
+    <resultMap id="teacherMap" type="domain.Teacher">
+        <id column="teacher_id" property="teacher_id"/>
+        <result column="teacher_name" property="teacher_name"/>
+        <collection property="students" javaType="list" ofType="domain.Student">
+            <id column="stu_id" property="stu_id"/>
+            <result column="stu_name" property="stu_name"/>
+        </collection>
+    </resultMap>
+    <!--多对多左连接查询 查询所有老师，并将对应学生也查出来-->
+    <select id="getAllTeacher" resultMap="teacherMap">
+        SELECT * FROM teacher
+        LEFT JOIN stu_teacher_rel
+        on teacher.teacher_id = stu_teacher_rel.teacher_id
+        LEFT JOIN student
+        on stu_teacher_rel.stu_id = student.stu_id;
+    </select>
+
+    <!--查询指定老师，多对多分步查询-->
+    <!--SELECT * FROM student WHERE stu_id in(SELECT stu_id FROM stu_teacher_rel WHERE teacher_id=1);-->
+    <select id="getTeacherWithId" resultMap="teacherMap2">
+        select * from teacher where  teacher_id = #{id};
+    </select>
+    <resultMap id="teacherMap2" type="domain.Teacher">
+        <id column="teacher_id" property="teacher_id"/>
+        <result column="teacher_name" property="teacher_name"/>
+        <collection property="students"
+                    ofType="domain.Student"
+                    select="mapper.StudentMapper.getStuByTeach"
+                    column="teacher_id"/>
+    </resultMap>
+
+    <!--保存老师-->
+    <insert id="insertTeacher" parameterType="domain.Teacher"
+            useGeneratedKeys="true"
+            keyProperty="teacher_id"
+            keyColumn="teacher_id">
+        insert into `teacher` (teacher_name) values (#{teacher_name})
+    </insert>
+
+    <!--插入关系表-->
+    <insert id="insertRelation">
+        insert into stu_teacher_rel (stu_id,teacher_id) values (#{stuId},#{teacherId})
+    </insert>
+
+</mapper>

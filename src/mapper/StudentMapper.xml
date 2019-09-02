@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.StudentMapper">
+    <!--保存学生-->
+    <insert id="insertStudent" parameterType="domain.Student"
+            useGeneratedKeys="true"
+            keyProperty="stu_id"
+            keyColumn="stu_id">
+        insert into `student` (stu_name) values (#{stu_name})
+    </insert>
+
+    <select id="getStuByTeach" resultType="domain.Student">
+        SELECT * FROM student WHERE stu_id in(SELECT stu_id FROM stu_teacher_rel WHERE teacher_id = #{id})
+    </select>
+</mapper>
